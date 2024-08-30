@@ -72,53 +72,57 @@
             "defesa": 2
         };
 
-        $(document).on('keydown', e => {
 
+        let imgInimigo = document.createElement('img');
+
+        imgInimigo.src = "images/aifolou.jpg";
+        imgInimigo.width = 128;
+        imgInimigo.height = 128;
+        imgInimigo.style.position = "absolute";
+        imgInimigo.style.top = Math.round( Math.random() * Math.floor(body.height / 128) ) * 128 + "px";
+        imgInimigo.style.left = Math.round( Math.random() * Math.floor(body.width / 128) ) * 128 + "px";
+        imgInimigo.style.animation = "jiggle 700ms infinite";
+
+        document.body.appendChild(imgInimigo);
+
+
+        function movimentar(tecla) {
             let movimentoValido = false;
 
-            if (/ArrowUp|^w$/.test(e.key) && 0 <= parseInt(aifolou.css("top")) - 128 ) {
+            if (/ArrowUp|^w$/.test(tecla) && 0 <= parseInt(aifolou.css("top")) - 128 ) {
                 aifolou.css("top", () => {return parseInt(aifolou.css("top")) - 128});
                 movimentoValido = true;
 
                 if (parseInt(aifolou.css("top")) - document.documentElement.scrollTop < window.innerHeight / 2) {
-                    scroll(scrollX, document.documentElement.scrollTop - 128);
+                    scrollBy(0, -128);
                 }
-
-            } else if (/ArrowDown|^s$/.test(e.key) && body.height - 128 >= parseInt(aifolou.css("top")) + 128 ) {
+            } else if (/ArrowDown|^s$/.test(tecla) && body.height - 128 >= parseInt(aifolou.css("top")) + 128 ) {
                 aifolou.css("top", () => {return parseInt(aifolou.css("top")) + 128});
                 movimentoValido = true;
 
                 if (parseInt(aifolou.css("top")) - document.documentElement.scrollTop > window.innerHeight / 2) {
-                    scroll(scrollX, document.documentElement.scrollTop + 128);
+                    scrollBy(0, 128);
                 }
-
-            } else if (/ArrowLeft|^a$/.test(e.key) && 0 <= parseInt(aifolou.css("left")) - 128 ) {
+            } else if (/ArrowLeft|^a$/.test(tecla) && 0 <= parseInt(aifolou.css("left")) - 128 ) {
                 aifolou.css("left", () => {return parseInt(aifolou.css("left")) - 128});
                 movimentoValido = true;
 
                 if (parseInt(aifolou.css("left")) - document.documentElement.scrollLeft < window.innerWidth / 2) {
-                    scroll(document.documentElement.scrollLeft - 128, scrollY);
+                    scrollBy(-128, 0);
                 }
-
-            } else if (/ArrowRight|^d$/.test(e.key) && body.width - 128 >= parseInt(aifolou.css("left")) + 128 ) {
+            } else if (/ArrowRight|^d$/.test(tecla) && body.width - 128 >= parseInt(aifolou.css("left")) + 128 ) {
                 aifolou.css("left", () => {return parseInt(aifolou.css("left")) + 128});
                 movimentoValido = true;
 
                 if (parseInt(aifolou.css("left")) - document.documentElement.scrollLeft > window.innerWidth / 2) {
-                    scroll(document.documentElement.scrollLeft + 128, scrollY);
+                    scrollBy(128, 0);
                 }
-
             }
 
-            if (movimentoValido) {
-                aifolou.removeClass("jiggle");
-                aifolou.get(0).offsetWidth;
-                aifolou.addClass("jiggle");
-            } else {
-                return;
-            }
+            return movimentoValido;
+        }
 
-
+        function turno() {
             let json_str;
             let dano;
 
@@ -162,8 +166,28 @@
                 enviandoRequest = true;
                 console.log("enviando request...")
             }
+        }
+
+        $(document).on('keydown', e => {
+
+            let movimentoValido = movimentar(e.key);
+
+            if (movimentoValido) {
+                aifolou.removeClass("jiggle");
+                aifolou.get(0).offsetWidth;
+                aifolou.addClass("jiggle");
+            } else {
+                return;
+            }
+
+            turno();
 
         });
+
+        window.onbeforeunload = function () {
+            window.scrollTo(0, 0);
+        }
+
     </script>
 </body>
 </html>
