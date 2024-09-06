@@ -62,14 +62,16 @@
             "tipo": "jogador",
             "vida": 200,
             "ataque": 10,
-            "defesa": 5
+            "defesa": 5,
+            "posicao": [0, 0]
         };
 
         let inimigo = {
             "tipo": "inimigo",
             "vida": 50,
             "ataque": 5,
-            "defesa": 2
+            "defesa": 2,
+            "posicao": null
         };
 
 
@@ -79,9 +81,12 @@
         imgInimigo.width = 128;
         imgInimigo.height = 128;
         imgInimigo.style.position = "absolute";
-        imgInimigo.style.top = Math.round( Math.random() * Math.floor(body.height / 128) ) * 128 + "px";
-        imgInimigo.style.left = Math.round( Math.random() * Math.floor(body.width / 128) ) * 128 + "px";
+        inimigo.posicao = [Math.round( Math.random() * Math.floor(body.width / 128) ), Math.round( Math.random() * Math.floor(body.height / 128) )];
+        imgInimigo.style.top = inimigo.posicao[1] * 128 + "px";
+        imgInimigo.style.left = inimigo.posicao[0] * 128 + "px";
         imgInimigo.style.animation = "jiggle 700ms infinite";
+
+
 
         document.body.appendChild(imgInimigo);
 
@@ -126,6 +131,9 @@
             let json_str;
             let dano;
 
+
+            // Verificando quem vai atacar e quem vai er atacado
+
             if (turnoDoJogador) {
                 json_str = JSON.stringify(inimigo);
                 dano = player.ataque;
@@ -134,9 +142,15 @@
                 dano = inimigo.ataque;
             }
 
+
+            // Prepara um objeto 'sendable' com as informações necessárias para o cálculo do dano
+
             let sendable = new FormData();
             sendable.append('entidade', json_str);
             sendable.append('dano', dano);
+
+
+            // Abre uma request HTTP enviando dados para 'processo.php'
 
             let request = new XMLHttpRequest();
 
@@ -170,13 +184,13 @@
 
         $(document).on('keydown', e => {
 
-            let movimentoValido = movimentar(e.key);
+            let movimentoValido = movimentar(e.key); // Tenta movimentar o personagem e retorna se o movimento foi válido
 
-            if (movimentoValido) {
+            if (movimentoValido) { // Se o movimento foi válido, é aplicado uma animação
                 aifolou.removeClass("jiggle");
                 aifolou.get(0).offsetWidth;
                 aifolou.addClass("jiggle");
-            } else {
+            } else { // Se o movimento não foi válido, o turno não é executado
                 return;
             }
 

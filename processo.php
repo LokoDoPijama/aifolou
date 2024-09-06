@@ -41,10 +41,16 @@ class Entidade {
 
 }
 
-header('Content-type: application/json');
+header('Content-type: application/json'); // Setando a header para mandar os dados de volta
+
+
+// Pegando os dados passados por request HTTP
 
 $json = json_decode($_POST['entidade']);
 $dano = $_POST['dano'];
+
+
+// Instaciando classe de acordo com quem está atacando
 
 if ($json->tipo == "jogador") {
     $tipo = new Jogador;
