@@ -96,6 +96,7 @@
 
             if (/ArrowUp|^w$/.test(tecla) && 0 <= parseInt(aifolou.css("top")) - 128 ) {
                 aifolou.css("top", () => {return parseInt(aifolou.css("top")) - 128});
+                player.posicao[0] -= 1;
                 movimentoValido = true;
 
                 if (parseInt(aifolou.css("top")) - document.documentElement.scrollTop < window.innerHeight / 2) {
@@ -103,6 +104,7 @@
                 }
             } else if (/ArrowDown|^s$/.test(tecla) && body.height - 128 >= parseInt(aifolou.css("top")) + 128 ) {
                 aifolou.css("top", () => {return parseInt(aifolou.css("top")) + 128});
+                player.posicao[0] += 1;
                 movimentoValido = true;
 
                 if (parseInt(aifolou.css("top")) - document.documentElement.scrollTop > window.innerHeight / 2) {
@@ -110,6 +112,7 @@
                 }
             } else if (/ArrowLeft|^a$/.test(tecla) && 0 <= parseInt(aifolou.css("left")) - 128 ) {
                 aifolou.css("left", () => {return parseInt(aifolou.css("left")) - 128});
+                player.posicao[1] -= 1;
                 movimentoValido = true;
 
                 if (parseInt(aifolou.css("left")) - document.documentElement.scrollLeft < window.innerWidth / 2) {
@@ -117,6 +120,7 @@
                 }
             } else if (/ArrowRight|^d$/.test(tecla) && body.width - 128 >= parseInt(aifolou.css("left")) + 128 ) {
                 aifolou.css("left", () => {return parseInt(aifolou.css("left")) + 128});
+                player.posicao[1] += 1;
                 movimentoValido = true;
 
                 if (parseInt(aifolou.css("left")) - document.documentElement.scrollLeft > window.innerWidth / 2) {
@@ -126,6 +130,8 @@
 
             return movimentoValido;
         }
+
+        
 
         function turno() {
             let json_str;
