@@ -1,0 +1,18 @@
+{
+    "name": "arthur/aifolou",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Arthur Felipe Marques",
+            "email": "zzanshin@gmail.com"
+        }
+    ],
+    "require": {
+        "cboden/ratchet": "^0.4.4"
+    },
+    "autoload": {
+        "psr-0": {
+            "Aifolou": ""
+        }
+    }    
+}
