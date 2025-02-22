@@ -6,9 +6,11 @@ class Player {
 
     public function __construct(
         public int $id,
-        public ?string $nome = null,
+        public ?string $name = null,
         public array $position = [0, 0], // [x, y]
-    ) {}
+    ) {
+        if ($name == null) $this->name = 'P' . $id;
+    }
 
 
     // Tenta mover o player e retorna se o movimento foi válido

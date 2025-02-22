@@ -8,7 +8,8 @@
         }
     ],
     "require": {
-        "cboden/ratchet": "^0.4.4"
+        "cboden/ratchet": "^0.4.4",
+        "twbs/bootstrap": "5.3.3"
     },
     "autoload": {
         "psr-0": {

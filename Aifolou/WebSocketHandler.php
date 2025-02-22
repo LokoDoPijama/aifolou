@@ -25,7 +25,7 @@ class WebSocketHandler implements MessageComponentInterface {
         $msg = [
             'type' => 'player',
             'action' => 'connect',
-            'id' => $conn->resourceId,
+            'playerId' => $conn->resourceId,
         ];
         foreach ($this->connections as $existingConn) {
             $existingConn->send(json_encode($msg));
@@ -72,6 +72,17 @@ class WebSocketHandler implements MessageComponentInterface {
 
     public function onClose(ConnectionInterface $conn)  {
         $this->connections->detach($conn);
+        unset($this->gameHandler->players[$conn->resourceId]);
+
+        $msg = [
+            'type' => 'player',
+            'action' => 'disconnect',
+            'playerId' => $conn->resourceId,
+        ];
+
+        foreach ($this->connections as $remainingConn) {
+            $remainingConn->send(json_encode($msg));
+        }
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e) {

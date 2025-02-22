@@ -1,5 +1,5 @@
 <?php
 
-use Aifolou\SendTo;
+$string = substr('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',0,10);
 
-echo SendTo::Everyone;
+var_dump($string);

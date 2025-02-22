@@ -1,20 +1,62 @@
-<?php
-
-?>
-
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <title>aifolou iu</title>
+
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-    <title>Inversão de Dependências</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="icon" href="images/aifolou.jpg">
+    <link rel="stylesheet" href="vendor/twbs/bootstrap/dist/css/bootstrap.min.css">
+    <script src="vendor/twbs/bootstrap/dist/js/bootstrap.min.js"></script>
 
     <style>
+        html {
+            scroll-behavior: auto !important; /* Desabilita smooth scrolling */
+        }
+
         body {
             overflow: hidden;
             background-image: url('images/bliss.png');
             width: 4510px;
             height: 3627px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        #nameWrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #chat {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 25vw;
+            min-width: 400px;
+            max-height: 30vh;
+            background-color: rgba(255, 255, 255, 0.5);
+            font-size: 0.875rem;
+            word-wrap: break-word;
+        }
+
+        #chat #messages {
+            max-height: 20vh;
+            overflow-y: auto;
+        }
+
+        #chat #messages p {
+            width: 100%;
+        }
+
+        #chat #textInput {
+            width: 100%;
+        }
+
+        #playersWrapper {
+            position: relative;
         }
 
         .player {
@@ -36,10 +78,20 @@
 </head>
 <body>
 
-
-    <div id="playersWrapper" style="position: relative">
+    <div id="nameWrapper">
+        <input id="textInputName" type="text" placeholder="Seu nome">
+        <button id="btnName">Enviar</button>
     </div>
 
+
+    <div id="playersWrapper" style="display: none">
+    </div>
+
+    <div id="chat" class="p-2" style="display: none">
+        <div id="messages">
+        </div>
+        <input id="textInput" type="text" placeholder="Aperte Enter para digitar no chat">
+    </div>
 
 
     <script src="js/jquery-3.7.1.min.js"></script>
@@ -47,6 +99,10 @@
     <script>
 
         // Game logic
+
+        $('#textInputName').focus();
+
+        let gameStart = false;
 
         let player;
         let playerElement;
@@ -219,18 +275,99 @@
             }
         }
 
+        function getPlayerIndexById(id) { // Retorna o index do player no array de players
+            for (let index in players) {
+                if (players[index].id == id) {
+                    return index;
+                }
+            }
+        }
+
+        function setPlayerName(playerToRename, name) { // Trata o nome, tenta mudar e retorna se o nome é válido
+            name = name.trim();
+
+            if (name != '') {
+                playerToRename.name = name;
+                return true;
+            }
+
+            return false;
+        }
+
+        function startGame() {
+            gameStart= true;
+
+            $('#nameWrapper').hide();
+            $('#playersWrapper').show();
+            $('#chat').show();
+        }
+
+        $('#btnName').on('click', function() {
+            let name = $('#textInputName').val();
+
+            if (setPlayerName(player, name)) {
+                let obj = JSON.stringify({"type": "player", "action": "rename", "name": name});
+                ws.send(obj);
+
+                startGame();
+            }
+        });
+
         
         $(document).on('keydown', e => {
+            if (!gameStart) {
+                if (e.key == 'Enter') {
+                    let name = $('#textInputName').val();
 
-            // Manda pro servidor
+                    if (setPlayerName(player, name)) {
+                        let obj = JSON.stringify({"type": "player", "action": "rename", "name": name});
+                        ws.send(obj);
+
+                        startGame();
+                    }
+                }
+                return;
+            }
+
+            let chatMessagesDiv = $('#chat #messages')
+            let textInput = $('#chat #textInput');
+            let chatMessage = textInput.val().trim();
+
+            if (textInput.is(':focus')) {
+                if (e.key == 'Enter' && chatMessage != '') {
+                    chatMessagesDiv.append(`<p><b>${player.name} (Você):</b> ${chatMessage}</p>`);
+
+                    // Manda mensagem pro servidor
+                    let obj = JSON.stringify({"type": "player", "action": "chat", "message": chatMessage});
+
+                    textInput.val('');
+                    textInput.blur();
+                    chatMessagesDiv.scrollTop(chatMessagesDiv.prop("scrollHeight"));
+                    ws.send(obj);
+                }
+
+                return;
+            }
+
 
             let direction = directionFromKey(e.key);
 
-            let obj = JSON.stringify({"type": "player", "action": "move", "direction": direction});
-            ws.send(obj);
+            if (direction != '') {
+                
+                // Manda movimento pro servidor
+                let obj = JSON.stringify({"type": "player", "action": "move", "direction": direction});
+                ws.send(obj);
+
+            } else { // Se a tecla que ele apertou não foi uma tecla de movimento
+                if (e.key == 'Enter') {
+                    textInput.focus();
+                }
+
+                return;
+            }
 
 
-            // Move no front-end
+            // Validação de movimento no front-end
 
             let valid = move(direction); // Tenta movimentar o personagem e retorna se o movimento foi válido
 
@@ -265,7 +402,7 @@
             let msg = JSON.parse(e.data);
 
             if (msg.type == 'player') {
-                if (msg.action == 'move') {
+                if (msg.action == 'move') { // PLAYER SE MOVEU
                     let playerToMove;
                     players.forEach(p => {
                         if (p.id == msg.playerId) playerToMove = p;
@@ -289,15 +426,29 @@
                         // Se o servidor mandou mover outro player que não seja você
                         absoluteMove(playerToMove, msg.direction);
                         let element = $('#player' + playerToMove.id);
-                        element.removeClass("jiggle");
-                        element.get(0).offsetWidth;
-                        element.addClass("jiggle");
+
+                        if (gameStart) {
+                            element.removeClass("jiggle");
+                            element.get(0).offsetWidth;
+                            element.addClass("jiggle");
+                        }
                     }
 
-                } else if (msg.action == 'connect') {
+                } else if (msg.action == 'chat') { // PLAYER MANDOU MENSAGEM NO CHAT
+                    let chatMessagesDiv = $('#chat #messages')
+                    let textInput = $('#chat #textInput');
+
+                    chatMessagesDiv.append(`<p><b>${msg.playerName}:</b> ${msg.message}</p>`);
+                    chatMessagesDiv.scrollTop(chatMessagesDiv.prop("scrollHeight"));
+
+                } else if (msg.action == 'rename') { // PLAYER MUDOU DE NOME
+                    let index = getPlayerIndexById(msg.playerId);
+                    setPlayerName(players[index], msg.playerName);
+
+                } else if (msg.action == 'connect') { // PLAYER SE CONECTOU
                     let newPlayer = {
-                        "id": msg.id,
-                        "name": "P" + msg.id,
+                        "id": msg.playerId,
+                        "name": "P" + msg.playerId,
                         "position": [0, 0]
                     };
 
@@ -306,9 +457,24 @@
 
                     // Se for o primeiro player (você mesmo)
                     if (players.length == 1) { 
+                        console.log('setando player e playerElement')
                         player = newPlayer;
                         playerElement = $('#player' + player.id);
                     }
+                } else if (msg.action == 'disconnect') { // PLAYER DISCONECTOU
+                    // Tirando da lista de players
+                    let indexToRemove;
+                    for (let index in players) {
+                        if (msg.playerId == players[index].id) {
+                            indexToRemove = index;
+                            break;
+                        }
+                    }
+                    players.splice(indexToRemove, 1);
+
+                    // Tirando elemento
+                    $('#player' + msg.playerId).remove();
+
                 }
             } else if (msg.type == 'populate') {
                 for (let key in msg.players) {
