@@ -114,24 +114,16 @@ class GameHandler {
             $player->position[1] + $directionArray[1]
         ];
 
-        echo "newPosition:\n";
-        print_r($newPosition);
-
         foreach ($this->players as $otherPlayer) {
             if ($otherPlayer->id == $player->id) {
                 continue;
             }
-            
-            echo "otherPlayer->position:\n";
-            print_r($otherPlayer->position);
 
             if ($otherPlayer->position[0] == $newPosition[0] &&
                 $otherPlayer->position[1] == $newPosition[1]) {
                 $valid = false;
             }
         }
-
-        echo $valid ? "it's valid\n" : "it's not valid\n";
 
         return $valid;
     }
