@@ -58,8 +58,110 @@ class GameHandler {
         return $response;
     }
 
-    public function movePlayer($playerId, $direction) {
-        return $this->players[$playerId]->move($direction);
+    public function movePlayer($playerId, $direction) : bool {
+
+        if ($this->isPlayerMoveValid($this->players[$playerId], $direction)) {
+            $this->players[$playerId]->move($direction);
+            return true;
+        }
+
+        return false;
+    }
+
+    private function isPlayerMoveValid($player, $direction) : bool {
+        $valid = true;
+
+
+        // Checkando se player tentou se mover além da borda
+
+        switch ($direction) {
+            case 'up':
+                if ($player->position[1] == 0) {
+                    $valid = false;
+                }
+                break;
+            
+            case 'down':
+                if ($player->position[1] == GameHandler::$field[1]) {
+                    $valid = false;
+                }
+                break;
+            
+            case 'left':
+                if ($player->position[0] == 0) {
+                    $valid = false;
+                }
+                break;
+            
+            case 'right':
+                if ($player->position[0] == GameHandler::$field[0]) {
+                    $valid = false;
+                }
+                break;
+            
+            default:
+                break;
+        }
+
+        if (!$valid) return false;
+
+
+        // Checkando se há outro player na nova posição
+
+        $directionArray = $this->translateDirectionStringToArray($direction);
+        $newPosition = [
+            $player->position[0] + $directionArray[0],
+            $player->position[1] + $directionArray[1]
+        ];
+
+        echo "newPosition:\n";
+        print_r($newPosition);
+
+        foreach ($this->players as $otherPlayer) {
+            if ($otherPlayer->id == $player->id) {
+                continue;
+            }
+            
+            echo "otherPlayer->position:\n";
+            print_r($otherPlayer->position);
+
+            if ($otherPlayer->position[0] == $newPosition[0] &&
+                $otherPlayer->position[1] == $newPosition[1]) {
+                $valid = false;
+            }
+        }
+
+        echo $valid ? "it's valid\n" : "it's not valid\n";
+
+        return $valid;
     }
     
+    private function translateDirectionStringToArray(string $direction) {
+        switch ($direction) {
+            case 'up':
+                return [0, -1];
+                break;
+            
+            case 'down':
+                return [0, 1];
+                break;
+            
+            case 'left':
+                return [-1, 0];
+                break;
+            
+            case 'right':
+                return [1, 0];
+                break;
+            
+            default:
+                return [0,0];
+                break;
+        }
+
+        return [0,0];
+
+    }
+
+
 }
