@@ -58,7 +58,7 @@ class GameHandler {
         return $response;
     }
 
-    public function movePlayer($playerId, $direction) : bool {
+    private function movePlayer($playerId, $direction) : bool {
 
         if ($this->isPlayerMoveValid($this->players[$playerId], $direction)) {
             $this->players[$playerId]->move($direction);
