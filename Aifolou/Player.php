@@ -13,7 +13,6 @@ class Player {
     }
 
 
-    // Tenta mover o player
     public function move($direction) {
         switch ($direction) {
             case 'up':
