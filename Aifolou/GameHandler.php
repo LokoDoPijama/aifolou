@@ -4,6 +4,11 @@ namespace Aifolou;
 class GameHandler {
     public array $players = [];
     public static $field = [35, 28]; // [x, y]
+    private WebSocketHandler $webSocketHandler;
+
+    public function __construct(WebSocketHandler $webSocketHandler) {
+        $this->webSocketHandler = $webSocketHandler;
+    }
 
     public function processMessage($playerId, $msg) {
         $message = json_decode($msg, true);
@@ -56,6 +61,28 @@ class GameHandler {
         }
 
         return $response;
+    }
+
+    public function mapTest() {
+        // TODO: pensar como vai ser implementado inimigo e quando que suas ações são verificadas
+        // TODO: usar isso para implementar e testar dano (vindo do mapa/inimigo) nos jogadores
+
+        return;
+        if (count($this->players) == 0) return;
+
+        $player = reset($this->players);
+
+
+        $message = [
+            'type' => 'player',
+            'playerId' => $player->id,
+            'action' => 'move',
+            'direction' => 'left',
+            'valid' => $this->movePlayer($player->id, 'left'),
+            'debug' => true
+        ];
+
+        $this->webSocketHandler->sendMessage($message);
     }
 
     private function movePlayer($playerId, $direction) : bool {

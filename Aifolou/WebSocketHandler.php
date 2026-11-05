@@ -7,11 +7,11 @@ use Aifolou\GameHandler;
 
 class WebSocketHandler implements MessageComponentInterface {
 
-    private $gameHandler;
-    private $connections;
+    public $gameHandler;
+    public $connections;
 
     public function __construct() {
-        $this->gameHandler = new GameHandler;
+        $this->gameHandler = new GameHandler($this);
         $this->connections = new \SplObjectStorage;
     }
 
@@ -87,5 +87,13 @@ class WebSocketHandler implements MessageComponentInterface {
 
     public function onError(ConnectionInterface $conn, \Exception $e) {
 
+    }
+
+    public function sendMessage($message, SendTo $sendTo = SendTo::Everyone) {
+        $messageJson = json_encode($message);
+
+        foreach ($this->connections as $conn) {
+            $conn->send($messageJson);
+        }
     }
 }

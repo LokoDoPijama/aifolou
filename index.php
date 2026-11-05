@@ -411,6 +411,7 @@
                     if (msg.playerId == player.id) {
                         // Servidor mandou seu movimento validado
 
+
                         if (msg.valid == toBeValidated[0].valid) { // Front-end e servidores concordaram
                             console.log('alright with this move')
                         } else if (toBeValidated[0].valid) { // Front-end marcou incorretamente como válido, aplicar rubber band
@@ -422,6 +423,7 @@
                         }
 
                         toBeValidated.splice(0, 1);
+
                     } else {
                         // Se o servidor mandou mover outro player que não seja você
                         absoluteMove(playerToMove, msg.direction);
