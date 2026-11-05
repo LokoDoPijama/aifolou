@@ -1,0 +1,10 @@
+.git
+vendor/
+.env
+.env.*
+node_modules/
+
+images/
+js/
+index.php
+tests.php

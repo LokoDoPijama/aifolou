@@ -5,7 +5,10 @@ use Ratchet\Http\HttpServer;
 use Ratchet\WebSocket\WsServer;
 use Aifolou\WebSocketHandler;
 
-    require dirname(__DIR__) . '\vendor\autoload.php';
+    require_once __DIR__ . '/../vendor/autoload.php';
+
+    $host = '0.0.0.0';
+    $port = (int) (getenv('PORT') ?: 10000);
 
     $handler = new WebSocketHandler();
 
@@ -15,7 +18,8 @@ use Aifolou\WebSocketHandler;
                 $handler
             )
         ),
-        8080
+        $port,
+        $host
     );
 
     $server->loop->addPeriodicTimer(2, function () use ($handler) {
