@@ -42,12 +42,12 @@
             word-wrap: break-word;
         }
 
-        #chat #messages {
+        #chat .chat-messages {
             max-height: 20vh;
             overflow-y: auto;
         }
 
-        #chat #messages p {
+        #chat .chat-messages p {
             width: 100%;
         }
 
@@ -74,6 +74,98 @@
             66% { transform: rotate(25deg) }
             100% { transform: rotate(0deg) }
         }
+
+
+        /* Mobile */
+
+        #nameWrapperMobile {
+            width: 100%;
+            position: absolute;
+            top: 45%;
+            transform: translateY(-50%);
+        }
+
+        #nameWrapperMobile #textInputNameMobile {
+            width: 50%;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 5rem;
+        }
+
+        #nameWrapperMobile #btnNameMobile {
+            width: 50%;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 5rem;
+        }
+
+        #mobileControls {
+            position: fixed;
+            bottom: 0;
+            width: 100%; height: 40%;
+            z-index: 9999;
+        }
+
+        #mobileControls #chatMobile .chat-messages {
+            font-size: 2.5rem;
+            height: 500px;
+            overflow-y: auto;
+        }
+
+        #mobileControls #chatMobile #textInputMobile {
+            font-size: 2.5rem;
+        }
+
+        #mobileControls #mobileDirections {
+            position: relative;
+            background-color: red;
+            width: 100%;
+            height: 55%;
+            opacity: 0.4;
+        }
+
+        #mobileDirections #leftBtn {
+            position: absolute;
+            width: 20%;
+            height: 50%;
+            background-color: blue;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            left: 20%;
+        }
+
+        #mobileDirections #rightBtn {
+            position: absolute;
+            width: 20%;
+            height: 50%;
+            background-color: blue;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            left: 80%;
+        }
+
+        #mobileDirections #upBtn {
+            position: absolute;
+            width: 20%;
+            height: 50%;
+            background-color: blue;
+            top: 20%;
+            transform: translate(-50%, -50%);
+            left: 50%;
+        }
+
+        #mobileDirections #downBtn {
+            position: absolute;
+            width: 20%;
+            height: 50%;
+            background-color: blue;
+            top: 80%;
+            transform: translate(-50%, -50%);
+            left: 50%;
+        }
+
     </style>
 </head>
 <body>
@@ -83,16 +175,42 @@
         <button id="btnName">Enviar</button>
     </div>
 
+    <div id="nameWrapperMobile" style="display: none">
+        <input id="textInputNameMobile" type="text" placeholder="Seu nome">
+        <button id="btnNameMobile">Enviar</button>
+    </div>
+
 
     <div id="playersWrapper" style="display: none">
     </div>
 
     <div id="chat" class="p-2" style="display: none">
-        <div id="messages">
+        <div class="chat-messages">
         </div>
         <input id="textInput" type="text" placeholder="Aperte Enter para digitar no chat">
     </div>
 
+    <div id="mobileControls" style="display: none;">
+        <div class="d-flex flex-column position-relative justify-content-end h-100">
+            <div id="chatMobile" class="p-2">
+                <div class="chat-messages">
+                </div>
+                <input id="textInputMobile" type="text" placeholder="Aperte para digitar no chat">
+            </div>
+
+            <div id="mobileDirections">
+                <div id="leftBtn">
+                </div>
+                <div id="rightBtn">
+                </div>
+                <div id="upBtn">
+                </div>
+                <div id="downBtn">
+                </div>
+            </div>
+
+        </div>
+    </div>
 
     <script src="js/jquery-3.7.1.min.js"></script>
 
@@ -144,45 +262,110 @@
             /* Fim Balela */
         }
 
-
-        function move(direction) { // Apenas para mover você mesmo
+        function verifyValidMovement(direction) {
             let valid = false;
 
+
+            // Verificando se player tentou ir além da borda do mapa
+
+            let fieldValid = false;
+
             if (direction == 'up' && player.position[1] > 0) {
-                valid = true;
-                player.position[1] -= 1;
-                playerElement.css("top", () => {return player.position[1] * 128});
-
-                if (parseInt(playerElement.css("top")) - document.documentElement.scrollTop < window.innerHeight / 2) {
-                    scrollBy(0, -128);
-                }
+                fieldValid = true;
             } else if (direction == 'down' && player.position[1] < field.height) {
-                valid = true;
-                player.position[1] += 1;
-                playerElement.css("top", () => {return player.position[1] * 128});
-
-                if (parseInt(playerElement.css("top")) - document.documentElement.scrollTop > window.innerHeight / 2) {
-                    scrollBy(0, 128);
-                }
+                fieldValid = true;
             } else if (direction == 'left' && player.position[0] > 0) {
-                valid = true;
-                player.position[0] -= 1;
-                playerElement.css("left", () => {return player.position[0] * 128});
-
-                if (parseInt(playerElement.css("left")) - document.documentElement.scrollLeft < window.innerWidth / 2) {
-                    scrollBy(-128, 0);
-                }
+                fieldValid = true;
             } else if (direction == 'right' && player.position[0] < field.width) {
-                valid = true;
-                player.position[0] += 1;
-                playerElement.css("left", () => {return player.position[0] * 128});
-
-                if (player.position[0] * 128 - document.documentElement.scrollLeft > window.innerWidth / 2) {
-                    scrollBy(128, 0);
-                }
+                fieldValid = true;
             }
 
+            if (!fieldValid) return false;
+
+
+            // Verificando se há outro player na nova posição
+
+            let collisionValid = true;
+
+            directionArray = [
+                direction == 'left' ? -1 : (direction == 'right' ? 1 : 0),
+                direction == 'up' ? -1 : (direction == 'down' ? 1 : 0),
+            ];
+
+            newPosition = [player.position[0] + directionArray[0], player.position[1] + directionArray[1]];
+
+            players.forEach(p => {
+                if (p.id == player.id) return;
+
+                if (p.position[0] == newPosition[0] &&
+                    p.position[1] == newPosition[1]) {
+                        collisionValid = false;
+                }
+            });
+
+            valid = fieldValid && collisionValid;
+
             return valid;
+        }
+
+        function triggerMovement(direction) {
+            // Manda movimento pro servidor
+            let obj = JSON.stringify({"type": "player", "action": "move", "direction": direction});
+            ws.send(obj);
+
+
+            // Validação de movimento no front-end
+
+            let valid = move(direction); // Tenta movimentar o personagem e retorna se o movimento foi válido
+
+            if (direction != '') {
+                let movement = {"direction": direction, "valid": valid};
+                toBeValidated.push(movement); // Manda pra lista de movimentos a serem validados pelo servidor
+            }
+
+            if (valid) { // Se o movimento foi válido, é aplicado uma animação
+                playerElement.removeClass("jiggle");
+                playerElement.get(0).offsetWidth;
+                playerElement.addClass("jiggle");
+            }
+        }
+
+        function move(direction) { // Apenas para mover você mesmo
+            if (verifyValidMovement(direction)) {
+                if (direction == 'up' && player.position[1] > 0) {
+                    player.position[1] -= 1;
+                    playerElement.css("top", () => {return player.position[1] * 128});
+
+                    if (parseInt(playerElement.css("top")) - document.documentElement.scrollTop < window.innerHeight / 2) {
+                        scrollBy(0, -128);
+                    }
+                } else if (direction == 'down' && player.position[1] < field.height) {
+                    player.position[1] += 1;
+                    playerElement.css("top", () => {return player.position[1] * 128});
+
+                    if (parseInt(playerElement.css("top")) - document.documentElement.scrollTop > window.innerHeight / 2) {
+                        scrollBy(0, 128);
+                    }
+                } else if (direction == 'left' && player.position[0] > 0) {
+                    player.position[0] -= 1;
+                    playerElement.css("left", () => {return player.position[0] * 128});
+
+                    if (parseInt(playerElement.css("left")) - document.documentElement.scrollLeft < window.innerWidth / 2) {
+                        scrollBy(-128, 0);
+                    }
+                } else if (direction == 'right' && player.position[0] < field.width) {
+                    player.position[0] += 1;
+                    playerElement.css("left", () => {return player.position[0] * 128});
+
+                    if (player.position[0] * 128 - document.documentElement.scrollLeft > window.innerWidth / 2) {
+                        scrollBy(128, 0);
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         function absoluteMove(playerToMove, direction) { // O absoluteMove força o movimento do player sem verificar se é válido.
@@ -298,12 +481,19 @@
             gameStart= true;
 
             $('#nameWrapper').hide();
+            $('#nameWrapperMobile').hide();
             $('#playersWrapper').show();
             $('#chat').show();
+
+            if (isMobile()) {
+                mobileZoomCorrectionOnGameStart();
+                $('#chat').hide();
+                $('#chatMobile').show();
+            }
         }
 
-        $('#btnName').on('click', function() {
-            let name = $('#textInputName').val();
+        $('#btnName, #btnNameMobile').on('click', function() {
+            let name = isMobile() ? $('#textInputNameMobile').val() : $('#textInputName').val();
 
             if (setPlayerName(player, name)) {
                 let obj = JSON.stringify({"type": "player", "action": "rename", "name": name});
@@ -329,8 +519,8 @@
                 return;
             }
 
-            let chatMessagesDiv = $('#chat #messages')
-            let textInput = $('#chat #textInput');
+            let chatMessagesDiv = isMobile() ? $('#chatMobile .chat-messages') : $('#chat .chat-messages');
+            let textInput = isMobile() ? $('#chatMobile #textInputMobile') : $('#chat #textInput');
             let chatMessage = textInput.val().trim();
 
             if (textInput.is(':focus')) {
@@ -352,13 +542,7 @@
 
             let direction = directionFromKey(e.key);
 
-            if (direction != '') {
-                
-                // Manda movimento pro servidor
-                let obj = JSON.stringify({"type": "player", "action": "move", "direction": direction});
-                ws.send(obj);
-
-            } else { // Se a tecla que ele apertou não foi uma tecla de movimento
+            if (direction == '') {
                 if (e.key == 'Enter') {
                     textInput.focus();
                 }
@@ -366,21 +550,7 @@
                 return;
             }
 
-
-            // Validação de movimento no front-end
-
-            let valid = move(direction); // Tenta movimentar o personagem e retorna se o movimento foi válido
-
-            if (direction != '') {
-                let movement = {"direction": direction, "valid": valid};
-                toBeValidated.push(movement); // Manda pra lista de movimentos a serem validados pelo servidor
-            }
-
-            if (valid) { // Se o movimento foi válido, é aplicado uma animação
-                playerElement.removeClass("jiggle");
-                playerElement.get(0).offsetWidth;
-                playerElement.addClass("jiggle");
-            }
+            triggerMovement(direction);
         });
 
         window.onbeforeunload = function () {
@@ -390,7 +560,9 @@
 
         // Websocket
 
-        const ws = new WebSocket('ws://<?php echo getHostByName(getHostName()) ?>:8080');
+        const ws = new WebSocket('wss://aifolou.onrender.com/'); // For production
+        // const ws = new WebSocket('ws://localhost:8080'); // For regular local network run
+        // const ws = new WebSocket('ws://192.168.5.132:8080'); // For no Docker local network run
 
         ws.onopen = function(e) {
             console.log("Connection established!");
@@ -437,7 +609,7 @@
                     }
 
                 } else if (msg.action == 'chat') { // PLAYER MANDOU MENSAGEM NO CHAT
-                    let chatMessagesDiv = $('#chat #messages')
+                    let chatMessagesDiv = isMobile() ? $('#chatMobile .chat-messages') : $('#chat .chat-messages');
                     let textInput = $('#chat #textInput');
 
                     chatMessagesDiv.append(`<p><b>${msg.playerName}:</b> ${msg.message}</p>`);
@@ -486,6 +658,66 @@
             }
         });
 
+
+
+        // Mobile (experimental)
+        
+        function isMobile(a = navigator.userAgent||navigator.vendor||window.opera){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) {return true} else {return false} };
+
+
+        function mobileZoomCorrection() {
+            var viewport = document.querySelector('meta[name="viewport"]');
+
+            if ( viewport ) {
+                viewport.content = "initial-scale=0.1";
+                // viewport.content = "width=1200";
+            }
+        }
+
+        function mobileZoomCorrectionOnGameStart() {
+            var viewport = document.querySelector('meta[name="viewport"]');
+
+            if ( viewport ) {
+                viewport.content = "initial-scale=1";
+                viewport.content = "width=device-width";
+            }
+        }
+
+        function mobileBtnCorrection() {
+            $('#nameWrapper').hide();
+            $('#nameWrapperMobile').show();
+        }
+
+        if (isMobile()) {
+            $('#mobileControls').show();
+            mobileZoomCorrection();
+            mobileBtnCorrection();
+
+        } else {
+            $('#mobileControls').hide();
+        }
+
+
+        $('#leftBtn').on('click', function() {
+            let direction = 'left';
+            triggerMovement(direction);
+        });
+
+        $('#rightBtn').on('click', function() {
+            let direction = 'right';
+            triggerMovement(direction);
+        });
+
+        $('#upBtn').on('click', function() {
+            let direction = 'up';
+            triggerMovement(direction);
+        });
+
+        $('#downBtn').on('click', function() {
+            let direction = 'down';
+            triggerMovement(direction);
+        });
+            
     </script>
 </body>
 </html>

@@ -7,6 +7,8 @@ use Aifolou\WebSocketHandler;
 
     require_once __DIR__ . '/../vendor/autoload.php';
 
+    $portDebug = $argv[1] ?? null;
+
     $host = '0.0.0.0';
     $port = (int) (getenv('PORT') ?: 10000);
 
@@ -18,7 +20,7 @@ use Aifolou\WebSocketHandler;
                 $handler
             )
         ),
-        $port,
+        $portDebug == null ? $port : $portDebug,
         $host
     );
 
