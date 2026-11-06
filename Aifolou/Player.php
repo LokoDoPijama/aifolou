@@ -8,6 +8,7 @@ class Player {
         public int $id,
         public ?string $name = null,
         public array $position = [0, 0], // [x, y]
+        public ?string $playerImage = null,
     ) {
         if ($name == null) $this->name = 'P' . $id;
     }

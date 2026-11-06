@@ -63,6 +63,12 @@
             aspect-ratio: 1/1;
             height: 128px;
             position: absolute;
+            object-fit: cover;
+        }
+
+        #playerImagePreview {
+            aspect-ratio: 1/1;
+            height: 128px;
         }
 
         .jiggle {
@@ -173,6 +179,16 @@
     <div id="nameWrapper">
         <input id="textInputName" type="text" placeholder="Seu nome">
         <button id="btnName">Enviar</button>
+
+        <div class="d-block mt-4">
+            <label for="playerImage" class="d-block fs-5">Imagem do jogador:</label>
+            <form id="playerImageForm">
+                <input id="playerImageInput" type="file" name="playerImage" class="d-block" onchange="previewPlayerImage()">
+            </form>
+            <img id="playerImagePreview" src="images/aifolou.jpg" alt="" class="mt-4" style="object-fit: cover">
+            <br>
+            <span id="imageErrorMsg" class="fs-5 text-danger" style="display: none"><b>ALGO DE ERRADO COM <br> SUA IMAGEM!</b></span>
+        </div>
     </div>
 
     <div id="nameWrapperMobile" style="display: none">
@@ -477,8 +493,59 @@
             return false;
         }
 
+        function updatePlayerImage(player, imagePath) {
+            player.playerImage = imagePath;
+            let playerImageElement = $(`#player${player.id}`).attr('src', imagePath);
+        }
+
+        function previewPlayerImage() {
+            var fr = new FileReader();
+            fr.onload = function(e) { $('#playerImagePreview').attr('src', this.result) };
+            fr.readAsDataURL($('#playerImageInput')[0].files[0]);
+        }
+
+        function sendPlayerImage() {
+
+            let success = true;
+
+            if ($('#playerImageInput')[0].files.length > 0) {
+                $.ajax({
+                    type: "POST",
+                    url: "save_image.php",
+                    data: new FormData($('#playerImageForm')[0]),
+                    processData: false,
+                    contentType: false,
+                    dataType: 'json',
+                    async: false,
+                    success: (data) => {
+                        updatePlayerImage(player, data.filename);
+
+                        let obj = JSON.stringify({"type": "player", "action": "updateImage", "playerId": player.id, "playerImage": player.playerImage});
+                        ws.send(obj);
+
+                        $('#imageErrorMsg').hide();
+
+                        success = true;
+                    },
+                    error: (xhr) => {
+                        // console.log(xhr.responseText)
+                        success = false;
+                        $('#imageErrorMsg').show();
+                    }
+                });
+            }
+
+            return success;
+        }
+
         function startGame() {
-            gameStart= true;
+
+            if (!sendPlayerImage()) {
+                
+                return;
+            }
+
+            gameStart = true;
 
             $('#nameWrapper').hide();
             $('#nameWrapperMobile').hide();
@@ -496,7 +563,7 @@
             let name = isMobile() ? $('#textInputNameMobile').val() : $('#textInputName').val();
 
             if (setPlayerName(player, name)) {
-                let obj = JSON.stringify({"type": "player", "action": "rename", "name": name});
+                let obj = JSON.stringify({"type": "player", "action": "rename", "name": name, "playerImage": player.playerImage});
                 ws.send(obj);
 
                 startGame();
@@ -619,6 +686,10 @@
                     let index = getPlayerIndexById(msg.playerId);
                     setPlayerName(players[index], msg.playerName);
 
+                } else if (msg.action == 'updateImage') { // PLAYER ATUALIZOU IMAGEM
+                    let index = getPlayerIndexById(msg.playerId);
+                    updatePlayerImage(players[index], msg.playerImage);
+
                 } else if (msg.action == 'connect') { // PLAYER SE CONECTOU
                     let newPlayer = {
                         "id": msg.playerId,
@@ -627,7 +698,7 @@
                     };
 
                     players.push(newPlayer);
-                    $('#playersWrapper').append(`<img id="player${newPlayer.id}" class="player" style="top: ${newPlayer.position[1] * 128}px; left: ${newPlayer.position[0] * 128}px" src="images/aifolou.jpg" alt="i">`);
+                    $('#playersWrapper').append(`<img id="player${newPlayer.id}" class="player" style="top: ${newPlayer.position[1] * 128}px; left: ${newPlayer.position[0] * 128}px" src="${newPlayer.playerImage ?? 'images/aifolou.jpg'}" alt="i">`);
 
                     // Se for o primeiro player (você mesmo)
                     if (players.length == 1) { 
@@ -653,7 +724,7 @@
             } else if (msg.type == 'populate') {
                 for (let key in msg.players) {
                     players.push(msg.players[key]);
-                    $('#playersWrapper').append(`<img id="player${key}" class="player" style="top: ${msg.players[key].position[1] * 128}px; left: ${msg.players[key].position[0] * 128}px" src="images/aifolou.jpg" alt="i">`);
+                    $('#playersWrapper').append(`<img id="player${key}" class="player" style="top: ${msg.players[key].position[1] * 128}px; left: ${msg.players[key].position[0] * 128}px" src="${msg.players[key].playerImage ?? 'images/aifolou.jpg'}" alt="i">`);
                 }
             }
         });

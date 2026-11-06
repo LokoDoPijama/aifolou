@@ -53,6 +53,10 @@ class GameHandler {
                         $response['sendTo'] = SendTo::NoOne;
                     }
 
+                } elseif ($message['action'] == 'updateImage') {
+                    $this->players[$playerId]->playerImage = $message['playerImage'];
+                    $response['playerImage'] = $message['playerImage'];
+                    $response['sendTo'] = SendTo::EveryoneElse;
                 }
                 break;
             
