@@ -1,5 +1,0 @@
-<?php
-
-$string = substr('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',0,10);
-
-var_dump($string);
