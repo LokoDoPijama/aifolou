@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>aifolou iu</title>
+
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A a folou, ai folou iu, dip si beibi, ai folou iu">
+
+    <link rel="icon" href="images/aifolou.jpg">
+    <link rel="stylesheet" href="vendor/twbs/bootstrap/dist/css/bootstrap.min.css">
+    <script src="vendor/twbs/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    <style>
+        html {
+            scroll-behavior: auto !important; /* Desabilita smooth scrolling */
+        }
+
+        body {
+            overflow: hidden;
+            background-image: url('images/bliss.png');
+            width: 4510px;
+            height: 3627px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        #nameWrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #chat {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 25vw;
+            min-width: 400px;
+            max-height: 30vh;
+            background-color: rgba(255, 255, 255, 0.5);
+            font-size: 0.875rem;
+            word-wrap: break-word;
+        }
+
+        #chat .chat-messages {
+            max-height: 20vh;
+            overflow-y: auto;
+        }
+
+        #chat .chat-messages p {
+            width: 100%;
+        }
+
+        #chat #textInput {
+            width: 100%;
+        }
+
+        #playersWrapper {
+            position: relative;
+        }
+
+        .player {
+            aspect-ratio: 1/1;
+            height: 128px;
+            position: absolute;
+            object-fit: cover;
+        }
+
+        #playerImagePreview {
+            aspect-ratio: 1/1;
+            height: 128px;
+        }
+
+        .jiggle {
+            animation: jiggle 120ms;
+        }
+
+        @keyframes jiggle {
+            33% { transform: rotate(-25deg) }
+            66% { transform: rotate(25deg) }
+            100% { transform: rotate(0deg) }
+        }
+
+
+        /* Mobile */
+
+        #nameWrapperMobile {
+            width: 100%;
+            position: absolute;
+            top: 45%;
+            transform: translateY(-50%);
+        }
+
+        #nameWrapperMobile #textInputNameMobile {
+            width: 50%;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 5rem;
+        }
+
+        #nameWrapperMobile #btnNameMobile {
+            width: 50%;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 5rem;
+        }
+
+        #mobileControls {
+            position: fixed;
+            bottom: 0;
+            width: 100%; height: 40%;
+            z-index: 9999;
+        }
+
+        #mobileControls #chatMobile .chat-messages {
+            font-size: 2.5rem;
+            height: 500px;
+            overflow-y: auto;
+        }
+
+        #mobileControls #chatMobile #textInputMobile {
+            font-size: 2.5rem;
+        }
+
+        #mobileControls #mobileDirections {
+            position: relative;
+            background-color: red;
+            width: 100%;
+            height: 55%;
+            opacity: 0.4;
+        }
+
+        #mobileDirections #leftBtn {
+            position: absolute;
+            width: 20%;
+            height: 50%;
+            background-color: blue;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            left: 20%;
+        }
+
+        #mobileDirections #rightBtn {
+            position: absolute;
+            width: 20%;
+            height: 50%;
+            background-color: blue;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            left: 80%;
+        }
+
+        #mobileDirections #upBtn {
+            position: absolute;
+            width: 20%;
+            height: 50%;
+            background-color: blue;
+            top: 20%;
+            transform: translate(-50%, -50%);
+            left: 50%;
+        }
+
+        #mobileDirections #downBtn {
+            position: absolute;
+            width: 20%;
+            height: 50%;
+            background-color: blue;
+            top: 80%;
+            transform: translate(-50%, -50%);
+            left: 50%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="nameWrapper">
+        <input id="textInputName" type="text" placeholder="Seu nome">
+        <button id="btnName">Enviar</button>
+
+        <div class="d-block mt-4">
+            <label for="playerImage" class="d-block fs-5">Imagem do jogador:</label>
+            <form id="playerImageForm">
+                <input id="playerImageInput" type="file" name="playerImage" class="d-block" onchange="previewPlayerImage()">
+            </form>
+            <img id="playerImagePreview" src="images/aifolou.jpg" alt="" class="mt-4" style="object-fit: cover">
+            <br>
+            <span id="imageErrorMsg" class="fs-5 text-danger" style="display: none"><b>ALGO DE ERRADO COM <br> SUA IMAGEM!</b></span>
+        </div>
+    </div>
+
+    <div id="nameWrapperMobile" style="display: none">
+        <input id="textInputNameMobile" type="text" placeholder="Seu nome">
+        <button id="btnNameMobile">Enviar</button>
+    </div>
+
+
+    <div id="playersWrapper" style="display: none">
+    </div>
+
+    <div id="chat" class="p-2" style="display: none">
+        <div class="chat-messages">
+        </div>
+        <input id="textInput" type="text" placeholder="Aperte Enter para digitar no chat">
+    </div>
+
+    <div id="mobileControls" style="display: none;">
+        <div class="d-flex flex-column position-relative justify-content-end h-100">
+            <div id="chatMobile" class="p-2">
+                <div class="chat-messages">
+                </div>
+                <input id="textInputMobile" type="text" placeholder="Aperte para digitar no chat">
+            </div>
+
+            <div id="mobileDirections">
+                <div id="leftBtn">
+                </div>
+                <div id="rightBtn">
+                </div>
+                <div id="upBtn">
+                </div>
+                <div id="downBtn">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
